@@ -1,0 +1,12 @@
+platformName: Android
+# 模拟器
+platformVersion: 6.0
+deviceName: emulator-5554
+noReset: True
+noSign: True
+unicodeKeyBoard: True
+resetKeyboard: True
+appPackage: com.burnish.kzhd2.user
+appActivity: com.burnish.kzhd2.user.activity.LoginActivity
+ip: 127.0.0.1
+port: 4723
