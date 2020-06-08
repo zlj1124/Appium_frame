@@ -6,10 +6,13 @@
 '''
 import os
 import time
-import sys
 from appium import webdriver
+from appium.webdriver.common.touch_action import TouchAction
 from selenium.webdriver.support.ui import WebDriverWait
 from utils.read_caps import read_caps
+import logging.config
+from Config import conf
+
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.wait import WebDriverWait as WD #别名为WD
@@ -19,15 +22,18 @@ from selenium.common.exceptions import (
     NoAlertPresentException,
 )
 
-
 cur_path = os.path.dirname(os.path.realpath(__file__))
 screenshot_path = os.path.join(os.path.dirname(cur_path),'screenshots')
 if not os.path.exists(screenshot_path):os.mkdir(screenshot_path)
 
+logging.config.fileConfig(conf.LOG_CONFIG_LOCATION)
+logger = logging.getLogger(__name__)
+
+
 class BasePage(object):
     """Base封装公用的方法"""
   
-    def __init__(self,timeout=30):
+    def __init__(self,driver,timeout=30):
         self.byDic = {
             'id': By.ID,
             'name': By.NAME,
@@ -36,23 +42,9 @@ class BasePage(object):
             'link_text': By.LINK_TEXT
         }
         self.timeout=timeout
-        data = read_caps()
-        desired_caps = {}
-        desired_caps['platformName'] = data['platformName']
-        desired_caps['platformVersion'] = data['platformVersion']
-        desired_caps['deviceName'] = data['deviceName']
-        desired_caps['appPackage'] = data['appPackage']
-        desired_caps['appActivity'] = data['appActivity']
-        desired_caps['noSign'] = data['noSign']
-        desired_caps['noReset'] = data['noReset']
-        desired_caps['unicodeKeyboard']=True #中文显示
-        desired_caps['resetKeyboard']=True
-        self.driver = webdriver.Remote('http://' + data['ip'] + ':' + str(data['port']) + '/wd/hub',desired_caps)
-      
-
-
-
-
+        self.driver=driver
+        print('basepage{}'.format(driver))
+  
 
     def find_element(self, by, locator):
         """
@@ -78,17 +70,11 @@ class BasePage(object):
         else:
             return elements        
 
-    # def clear_key(self,loc):
-    #     """重写清空文本输入法"""
-    #     time.sleep(3)
-    #     self.find_element(loc).clear()
+
 
     def clear(self, by, locator):
         """清理数据"""
         print('info:clearing value')
-        print('by:{}locator:{}'.format(by,locator))
-
-
         try:
             element = self.find_element(by, locator)
             element.clear()
@@ -97,21 +83,21 @@ class BasePage(object):
 
     def send_keys(self, value, by,locator=''):
         """重写在文本框中输入内容的方法"""
-        print("locator:{},by:{}".format(locator,by))
-        print('info:input "{}"'.format(value))
-        self.clear_key(locator)
+        # print('info:input "{}"'.format(value))
+        logger.info('info:input "{}"'.format(value))
         try:
-            element= WebDriverWait(self.driver, 30).until(
+            element= WebDriverWait(self.driver, self.timeout).until(
             EC.presence_of_element_located((by, locator)))
             element.send_keys(value)
-            time.sleep(1)
+      
         except AttributeError as e:
             print(e)
 
   
     def click(self, by, locator):
         """点击某个元素"""
-        print('info:click "{}"'.format(locator))
+        logger.info('info:click "{}"'.format(locator))
+        # print('info:click "{}"'.format(locator))
         element = self.is_click(by, locator)
         if element!=None:
             element.click()
@@ -142,12 +128,37 @@ class BasePage(object):
         """获取屏幕大小"""
         windows_size = self.driver.get_window_size()
         return windows_size
+
+    # 权限处理
+    def click_shoot_windows(self,by,locator):
+         try:
+
+            els = self.find_elements(by, locator)
+            for el in els:
+                if el.text == u'允许':
+                    self.driver.find_element_by_android_uiautomator('new UiSelector().text("允许")').click()
+               
+         except:
+             print("无权限弹框处理")
+
+
+    #action_touch只采用元素位置定位，不用坐标 
+    #坐标弊端，不同分别率的坐标不一致
+    def long_press(self,by,locator,time=2000):
+        print('info:long_press "{}"'.format(locator))
+        try:
+            element = self.find_element(by, locator)
+            TouchAction(self.driver).long_press(ele=element,duration=time).perform()
+        except AttributeError as e:
+            print(e)   
+        
+
     
     def close_app(self):
         self.driver.quit()    
 
 if __name__ == "__main__":
-    test= Action()
+    pass
     
     
 

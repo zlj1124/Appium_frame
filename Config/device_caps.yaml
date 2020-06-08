@@ -3,7 +3,6 @@ platformName: Android
 platformVersion: 6.0
 deviceName: emulator-5554
 noReset: True
-noSign: True
 unicodeKeyBoard: True
 resetKeyboard: True
 appPackage: com.burnish.kzhd2.user

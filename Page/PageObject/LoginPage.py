@@ -11,9 +11,9 @@ from utils.parseConFile import ParseConFile
 class LoginPage(BasePage):
     # 配置文件读取元素
     do_conf = ParseConFile()
+
     # 用户名输入框
     username = do_conf.get_locators_or_account('LoginPageElements', 'username')
-   
     # 密码输入框
     password = do_conf.get_locators_or_account('LoginPageElements', 'password')
     # 登录按钮
@@ -26,6 +26,7 @@ class LoginPage(BasePage):
         self.input_username(username)
         self.input_password(password)
         self.click_login_btn()
+
         
     
     def input_username(self, username):
@@ -39,7 +40,9 @@ class LoginPage(BasePage):
 
     def click_login_btn(self):
         return self.click(*LoginPage.loginBtn)
-
+    
+    # def click_auth_but(self):
+    #     return self.click(*)
   
 
 if __name__ == "__main__":
